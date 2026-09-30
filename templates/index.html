@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CodeAlpha URL Shortener</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            background: #222;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #444;
+            }
+
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            display: none;
+        }
+
+        #shortUrl {
+            color: #0066cc;
+            word-break: break-all;
+        }
+
+        #error {
+            margin-top: 15px;
+            color: #d00000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>CodeAlpha URL Shortener</h1>
+
+        <p class="description">
+            Enter a long URL and generate a short link.
+        </p>
+
+        <input type="url"
+               id="urlInput"
+               placeholder="https://example.com/your-long-url"
+               required>
+
+        <button onclick="shortenUrl()">
+            Shorten URL
+        </button>
+
+        <div id="result">
+            <strong>Your shortened URL:</strong>
+            <br><br>
+
+            <a id="shortUrl" href="#" target="_blank"></a>
+        </div>
+
+        <div id="error"></div>
+
+    </div>
+
+    <script>
+
+async function shortenUrl() {
+
+    const urlInput = document.getElementById("urlInput");
+    const result = document.getElementById("result");
+    const shortUrl = document.getElementById("shortUrl");
+    const error = document.getElementById("error");
+
+    const url = urlInput.value.trim();
+
+    result.style.display = "none";
+    error.textContent = "";
+
+    if (!url) {
+        error.textContent = "Please enter a URL.";
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/shorten", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                url: url
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            error.textContent = data.error || "Something went wrong.";
+            return;
+        }
+
+        const shortenedUrl =
+            window.location.origin + "/" + data.short_code;
+
+        shortUrl.href = shortenedUrl;
+        shortUrl.textContent = shortenedUrl;
+
+        result.style.display = "block";
+
+    } catch (error) {
+
+        error.textContent =
+            "Could not connect to the server.";
+
+    }
+}
+
+    </script>
+
+</body>
+</html>
